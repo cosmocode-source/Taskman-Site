@@ -1,42 +1,95 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
+.app {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;      /* vertical center */
+  justify-content: center;  /* horizontal center */
   padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* simple centered hero card */
+.hero {
+  width: 100%;
+  max-width: 800px;
+  padding: 48px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* title / branding */
+.title {
+  margin: 0 0 12px;
+  font-size: 2.25rem;
+  line-height: 1.05;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  font-weight: 700;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* supporting text */
+.lead {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 1rem;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* responsive */
+@media (max-width: 640px) {
+  .hero { padding: 28px; }
+  .title { font-size: 1.6rem; }
 }
 
-.card {
-  padding: 2em;
+/* collaborators avatars */
+.collaborators {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
 }
 
-.read-the-docs {
-  color: #888;
+.member {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e6eefc;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 6px 14px rgba(2,6,23,0.45);
+  font-size: 0.9rem;
 }
+
+/* ensure hero remains centered on page */
+.hero { text-align: center; }
+
+/* team header */
+.teamHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.teamName {
+  color: #9fb4ff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+}
+
+.teamMeta {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+
