@@ -1,14 +1,27 @@
 import React from 'react'
 import './App.css'
+import {BrowserRouter, Routes, Route} from 'react-router-dom'
+
+// Import page components
+import Home from './pages/Home'
+import Projects from './pages/Projects'
+import Tasks from './pages/Tasks'
+import Calendar from './pages/Calendar'
+import Discussion from './pages/Discussion'
+import Files from './pages/Files'
 
 function App() {
   return (
-    <div className="app">
-      <div className="hero">
-        <h1 className="title">Welcome to TaskMan</h1>
-        <p className="lead">Organize, prioritize and finish — simple, secure task management for teams and individuals.</p>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/project/:projectId/tasks" element={<Tasks />} />
+        <Route path="/project/:projectId/calendar" element={<Calendar />} />
+        <Route path="/project/:projectId/discussion" element={<Discussion />} />
+        <Route path="/project/:projectId/files" element={<Files />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
