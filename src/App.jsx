@@ -9,12 +9,16 @@ import Tasks from './pages/Tasks'
 import Calendar from './pages/Calendar'
 import Discussion from './pages/Discussion'
 import Files from './pages/Files'
+import SignIn from './pages/SignIn'
+import SignUp from './pages/SignUp'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/project/:projectId/tasks" element={<Tasks />} />
         <Route path="/project/:projectId/calendar" element={<Calendar />} />
