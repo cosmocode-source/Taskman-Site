@@ -156,11 +156,15 @@ function NewProject() {
                     {pendingInvites.map((identifier, index) => (
                       <div key={index} className="pending-invite-item">
                         <div className="invite-info">
-                          <i className="fas fa-user-circle"></i>
-                          <span className="invite-identifier">
-                            {identifier.includes('@') ? identifier : `@${identifier}`}
-                          </span>
-                          <span className="invite-status">Pending</span>
+                          <div className="invite-icon">
+                            <i className="fas fa-user-circle"></i>
+                          </div>
+                          <div className="invite-details">
+                            <span className="invite-identifier">
+                              {identifier.includes('@') ? identifier : `@${identifier}`}
+                            </span>
+                            <span className="invite-status">Pending</span>
+                          </div>
                         </div>
                         <button 
                           className="remove-invite-btn"

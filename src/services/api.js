@@ -28,6 +28,8 @@ export const projectsAPI = {
     delete: (id) => API.delete(`/projects/${id}`),
     addMember: (id, identifier) => API.post(`/projects/${id}/members`, { identifier }),
     removeMember: (id, userId) => API.delete(`/projects/${id}/members/${userId}`),
+    complete: (projectId) => API.patch(`/projects/${projectId}/complete`),
+    getCompleted: () => API.get('/projects?status=completed'), // optional, see below
 };
 
 // Tasks API
@@ -48,6 +50,8 @@ export const filesAPI = {
 // Discussions API
 export const discussionsAPI = {
     getByProject: (projectId) => API.get(`/discussions/project/${projectId}`),
+    getChat: (projectId, userId, currentUserId) => API.get(`/discussions/chat/${projectId}/${userId}?currentUserId=${currentUserId}`),
+    getUnreadCounts: (projectId, userId) => API.get(`/discussions/unread/${projectId}/${userId}`),
     create: (data) => API.post('/discussions', data),
     addReply: (id, data) => API.post(`/discussions/${id}/reply`, data),
     delete: (id) => API.delete(`/discussions/${id}`),

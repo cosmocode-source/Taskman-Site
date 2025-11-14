@@ -108,6 +108,15 @@ function Dashboard() {
         {/* Welcome Header */}
         <div className="dashboard-header">
           <h1>Welcome back, {user?.name?.split(' ')[0] || 'User'}!</h1>
+
+          {/* right-side header actions row */}
+          <div className="dashboard-header-actions">
+            {/* existing header actions like "My Projects", "Logout" should already be here.
+                We only add this one small link. */}
+            <Link to="/projects/completed" className="header-link">
+              <i className="fas fa-check-circle"></i> View Completed Projects
+            </Link>
+          </div>
         </div>
 
         {/* Announcements Section */}

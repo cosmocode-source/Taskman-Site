@@ -15,6 +15,16 @@ const discussionSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    type: {
+        type: String,
+        enum: ['public', 'private'],
+        default: 'public'
+    },
+    recipient: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
     replies: [{
         author: {
             type: mongoose.Schema.Types.ObjectId,
@@ -25,7 +35,11 @@ const discussionSchema = new mongoose.Schema({
             type: Date,
             default: Date.now
         }
-    }]
+    }],
+    read: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 })

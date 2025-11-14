@@ -21,7 +21,16 @@ const projectSchema = new mongoose.Schema({
     members: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }]
+    }],
+    status: {
+        type: String,
+        enum: ['active', 'completed'],
+        default: 'active'
+    },
+    completedAt: {
+        type: Date,
+        default: null
+    }
 }, {
     timestamps: true
 })

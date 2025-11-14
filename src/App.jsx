@@ -16,6 +16,7 @@ import KanbanBoard from './pages/KanbanBoard'
 import Calendar from './pages/Calendar'
 import Discussion from './pages/Discussion'
 import Files from './pages/Files'
+import CompletedProjects from './pages/CompletedProjects'
 
 function App() {
   return (
@@ -104,6 +105,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route path="/projects/completed" element={<CompletedProjects />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

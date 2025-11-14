@@ -221,4 +221,27 @@ router.delete('/:id/members/:userId', async (req, res) => {
     }
 })
 
+// @route   PATCH /api/projects/:id/complete
+// @desc    Mark project as completed
+router.patch('/:id/complete', async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const project = await Project.findByIdAndUpdate(
+      id,
+      { status: 'completed', completedAt: new Date() },
+      { new: true }
+    )
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' })
+    }
+
+    res.json(project)
+  } catch (err) {
+    console.error('Error marking project completed:', err)
+    res.status(500).json({ message: 'Server error marking project completed' })
+  }
+})
+
 export default router

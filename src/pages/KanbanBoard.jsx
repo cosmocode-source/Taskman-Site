@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import Nav from '../components/Nav'
 import { tasksAPI, projectsAPI } from '../services/api'
 import './Pages.css'
@@ -182,6 +182,23 @@ function KanbanBoard() {
     }
   }
 
+  const handleCompleteProject = async () => {
+    if (!project) return
+    const ok = window.confirm(
+      'Are you sure you want to mark this project as completed? You can still view it in Completed Projects.'
+    )
+    if (!ok) return
+
+    try {
+      const res = await projectsAPI.complete(projectId)
+      setProject(prev => ({ ...(prev || {}), ...res.data }))
+      alert('Project marked as completed.')
+    } catch (error) {
+      console.error('Error completing project:', error.response || error)
+      alert(error.response?.data?.message || 'Failed to mark project as completed.')
+    }
+  }
+
   if (loading) {
     return (
       <>
@@ -213,48 +230,71 @@ function KanbanBoard() {
   return (
     <>
       <Nav />
-      <div className="page-content kanban-page">
-        {/* Project Header */}
-        {project && (
-          <div className="kanban-header">
-            <div className="kanban-header-left">
-              <h1 className="project-name">{project.name}</h1>
-              <p className="project-description">{project.description || 'No description'}</p>
-              <div className="team-section">
-                <span className="team-label">Team Members</span>
-                <div className="team-avatars">
-                  {project.owner && (
-                    <div className="avatar-circle" title={`${project.owner.name} (Lead)`}>
-                      <i className="fas fa-user-circle"></i>
+      <div className="kanban-page">
+        {/* top header row */}
+        <div className="kanban-top-bar">
+          <div className="kanban-top-left">
+            {/* your existing project title, breadcrumbs, tabs etc */}
+            {project && (
+              <div className="kanban-header">
+                <div className="kanban-header-left">
+                  <h1 className="project-name">{project.name}</h1>
+                  <p className="project-description">{project.description || 'No description'}</p>
+                  <div className="team-section">
+                    <span className="team-label">Team Members</span>
+                    <div className="team-avatars">
+                      {project.owner && (
+                        <div className="avatar-circle" title={`${project.owner.name} (Lead)`}>
+                          <i className="fas fa-user-circle"></i>
+                        </div>
+                      )}
+                      {project.members?.slice(0, 3).map((member, idx) => (
+                        <div key={idx} className="avatar-circle" title={member.name}>
+                          <i className="fas fa-user-circle"></i>
+                        </div>
+                      ))}
+                      {project.members?.length > 3 && (
+                        <div className="avatar-circle more">
+                          +{project.members.length - 3}
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {project.members?.slice(0, 3).map((member, idx) => (
-                    <div key={idx} className="avatar-circle" title={member.name}>
-                      <i className="fas fa-user-circle"></i>
-                    </div>
-                  ))}
-                  {project.members?.length > 3 && (
-                    <div className="avatar-circle more">
-                      +{project.members.length - 3}
-                    </div>
-                  )}
+                    <span className="member-names">
+                      {project.owner?.name} (Lead)
+                      {project.members?.length > 0 && `, ${project.members[0]?.name}`}
+                    </span>
+                  </div>
                 </div>
-                <span className="member-names">
-                  {project.owner?.name} (Lead)
-                  {project.members?.length > 0 && `, ${project.members[0]?.name}`}
-                </span>
+                <div className="kanban-header-right">
+                  <button className="btn-add" onClick={() => setShowModal(true)}>
+                    <i className="fas fa-plus"></i>
+                    Add Task
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="kanban-header-right">
-              <button className="btn-add" onClick={() => setShowModal(true)}>
-                <i className="fas fa-plus"></i>
-                Add Task
-              </button>
-            </div>
+            )}
           </div>
-        )}
 
-        {/* Kanban Board */}
+          <div className="kanban-top-right">
+            {project?.status === 'completed' ? (
+              <span className="project-completed-pill">
+                <i className="fas fa-check-circle"></i>
+                Completed
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="btn-finish-project"
+                onClick={handleCompleteProject}
+              >
+                <i className="fas fa-flag-checkered"></i>
+                Mark Project as Completed
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* existing columns / board UI below stays exactly as-is */}
         <div className="kanban-board">
           {columns.map(column => (
             <div 

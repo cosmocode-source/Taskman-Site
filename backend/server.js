@@ -5,7 +5,7 @@ import connectDB from './config/db.js'
 
 // Import routes
 import authRoutes from './routes/auth.js'
-import projectRoutes from './routes/projects.js'
+import projectsRouter from './routes/projects.js'
 import taskRoutes from './routes/tasks.js'
 import fileRoutes from './routes/files.js'
 import discussionRoutes from './routes/discussions.js'
@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true }))
 
 // Routes
 app.use('/api/auth', authRoutes)
-app.use('/api/projects', projectRoutes)
+app.use('/api/projects', projectsRouter)
 app.use('/api/tasks', taskRoutes)
 app.use('/api/files', fileRoutes)
 app.use('/api/discussions', discussionRoutes)

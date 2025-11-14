@@ -2859,13 +2859,6 @@
   font-size: 14px;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* ============================================
    ANNOUNCEMENTS PAGE STYLES
    ============================================ */
@@ -2956,16 +2949,11 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(52, 152, 219, 0.1);
-  border-left: 3px solid #3498db;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #3498db;
-  margin-bottom: 16px;
-}
-
-.announcement-project-badge i {
-  font-size: 11px;
+  border-radius: 999px;
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .announcement-card-footer {
@@ -3017,7 +3005,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: #1a1d29;
+     background: #1a1d29;
   border: 1px solid #2f3342;
   border-radius: 8px;
   margin-bottom: 8px;
@@ -3399,38 +3387,227 @@
   font-size: 0.875rem;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-  .kanban-board {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* header actions row (used on dashboard top-right) */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-@media (max-width: 768px) {
-  .kanban-page {
-    padding: 1rem;
-  }
+.dashboard-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-  .kanban-header {
-    flex-direction: column;
-    gap: 1rem;
-  }
+.header-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #e4e6eb;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #1f232e;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
 
-  .kanban-header-right {
-    width: 100%;
-  }
+.header-link i {
+  font-size: 14px;
+  color: #2ecc71;
+}
 
-  .kanban-header-right .btn-add {
-    width: 100%;
-  }
+.header-link:hover {
+  border-color: #2ecc71;
+  background: rgba(46, 204, 113, 0.12);
+  color: #ffffff;
+}
 
-  .kanban-board {
-    grid-template-columns: 1fr;
-  }
+/* Kanban top bar layout – minimal additions */
+.kanban-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px 8px;
+}
 
-  .kanban-column {
-    max-height: 500px;
-  }
+.kanban-top-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* prominent finish-project button */
+.btn-finish-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: #0b0c10;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(230, 126, 34, 0.45);
+  transition: all 0.2s ease;
+}
+
+.btn-finish-project i {
+  font-size: 14px;
+}
+
+.btn-finish-project:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(230, 126, 34, 0.6);
+}
+
+/* pill shown when already completed */
+.project-completed-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.project-completed-pill i {
+  font-size: 14px;
+}
+
+/* Completed project cards reuse project-overview-card, just extend slightly */
+.completed-project-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.completed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+.completed-badge i {
+  font-size: 12px;
+}
+
+/* top summary row */
+.project-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.summary-chip {
+  flex: 0 0 auto;
+  min-width: 90px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.summary-label {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+/* member stats block */
+.member-stats {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.member-stats-header {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.member-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.member-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.member-name-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.member-avatar-mini {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #111827;
+  color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.member-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.member-username {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.member-numbers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 11px;
+  color: #9ca3af;
+  gap: 2px;
+}
+
+.member-pct {
+  font-weight: 600;
+  color: #2ecc71;
 }
 
 
