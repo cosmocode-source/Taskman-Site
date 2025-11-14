@@ -116,10 +116,10 @@ function Projects() {
       <div className="page-content">
         <div className="page-header">
           <h1>My Projects</h1>
-          <button className="btn-add" onClick={() => setShowModal(true)}>
+          <Link to="/projects/new" className="btn-add">
             <i className="fas fa-plus"></i>
             New Project
-          </button>
+          </Link>
         </div>
 
         {projects.length === 0 ? (

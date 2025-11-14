@@ -9,6 +9,7 @@ import projectRoutes from './routes/projects.js'
 import taskRoutes from './routes/tasks.js'
 import fileRoutes from './routes/files.js'
 import discussionRoutes from './routes/discussions.js'
+import announcementRoutes from './routes/announcements.js'
 
 dotenv.config()
 
@@ -29,6 +30,7 @@ app.use('/api/projects', projectRoutes)
 app.use('/api/tasks', taskRoutes)
 app.use('/api/files', fileRoutes)
 app.use('/api/discussions', discussionRoutes)
+app.use('/api/announcements', announcementRoutes)
 
 // Health check
 app.get('/', (req, res) => {

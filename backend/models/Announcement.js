@@ -1,39 +1,38 @@
 import mongoose from 'mongoose'
 
-const taskSchema = new mongoose.Schema({
+const announcementSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true
     },
     description: {
-        type: String
+        type: String,
+        required: true
     },
-    projectId: {
+    project: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Project',
         required: true
     },
-    assignedTo: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    },
-    status: {
+    icon: {
         type: String,
-        enum: ['proposed', 'todo', 'in-progress', 'done'],
-        default: 'todo'
+        default: 'fas fa-bullhorn'
     },
     priority: {
         type: String,
         enum: ['low', 'medium', 'high'],
         default: 'medium'
     },
-    dueDate: {
-        type: Date
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 }, {
     timestamps: true
 })
 
-const Task = mongoose.model('Task', taskSchema)
-
-export default Task
+export default mongoose.model('Announcement', announcementSchema)

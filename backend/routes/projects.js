@@ -9,8 +9,8 @@ const router = express.Router()
 router.get('/', async (req, res) => {
     try {
         const projects = await Project.find()
-            .populate('owner', 'name email avatar')
-            .populate('members', 'name email avatar')
+            .populate('owner', 'name username email avatar')
+            .populate('members', 'name username email avatar')
             .sort({ createdAt: -1 })
 
         res.json(projects)
@@ -25,8 +25,8 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const project = await Project.findById(req.params.id)
-            .populate('owner', 'name email avatar')
-            .populate('members', 'name email avatar')
+            .populate('owner', 'name username email avatar')
+            .populate('members', 'name username email avatar')
 
         if (!project) {
             return res.status(404).json({ message: 'Project not found' })
@@ -43,7 +43,7 @@ router.get('/:id', async (req, res) => {
 // @desc    Create a new project
 router.post('/', async (req, res) => {
     try {
-        const { name, description, color, owner, members } = req.body
+        const { name, description, color, owner, members, invitedEmails } = req.body
 
         // Validation
         if (!name) {
@@ -59,17 +59,37 @@ router.post('/', async (req, res) => {
             }
         }
 
+        // Process invited members - look up users by email or username
+        let memberIds = members || []
+        if (invitedEmails && invitedEmails.length > 0) {
+            for (const identifier of invitedEmails) {
+                // Check if it's an email or username
+                const isEmail = identifier.includes('@')
+                let user
+
+                if (isEmail) {
+                    user = await User.findOne({ email: identifier.toLowerCase() })
+                } else {
+                    user = await User.findOne({ username: identifier.toLowerCase() })
+                }
+
+                if (user && !memberIds.includes(user._id.toString())) {
+                    memberIds.push(user._id)
+                }
+            }
+        }
+
         const project = await Project.create({
             name,
             description: description || '',
             color: color || '#3498db',
             owner: projectOwner,
-            members: members || []
+            members: memberIds
         })
 
         const populatedProject = await Project.findById(project._id)
-            .populate('owner', 'name email avatar')
-            .populate('members', 'name email avatar')
+            .populate('owner', 'name username email avatar')
+            .populate('members', 'name username email avatar')
 
         res.status(201).json(populatedProject)
     } catch (error) {
@@ -97,8 +117,8 @@ router.put('/:id', async (req, res) => {
         await project.save()
 
         const updatedProject = await Project.findById(project._id)
-            .populate('owner', 'name email avatar')
-            .populate('members', 'name email avatar')
+            .populate('owner', 'name username email avatar')
+            .populate('members', 'name username email avatar')
 
         res.json(updatedProject)
     } catch (error) {
@@ -122,6 +142,82 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
         console.error('Error deleting project:', error)
         res.status(500).json({ message: 'Server error deleting project' })
+    }
+})
+
+// @route   POST /api/projects/:id/members
+// @desc    Add a member to a project
+router.post('/:id/members', async (req, res) => {
+    try {
+        const { identifier } = req.body // Can be email or username
+
+        if (!identifier) {
+            return res.status(400).json({ message: 'Email or username is required' })
+        }
+
+        const project = await Project.findById(req.params.id)
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' })
+        }
+
+        // Find user by email or username
+        const isEmail = identifier.includes('@')
+        let user
+
+        if (isEmail) {
+            user = await User.findOne({ email: identifier.toLowerCase() })
+        } else {
+            user = await User.findOne({ username: identifier.toLowerCase() })
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+
+        // Check if user is already a member
+        if (project.members.includes(user._id)) {
+            return res.status(400).json({ message: 'User is already a member of this project' })
+        }
+
+        // Add member
+        project.members.push(user._id)
+        await project.save()
+
+        const updatedProject = await Project.findById(project._id)
+            .populate('owner', 'name username email avatar')
+            .populate('members', 'name username email avatar')
+
+        res.json(updatedProject)
+    } catch (error) {
+        console.error('Error adding member:', error)
+        res.status(500).json({ message: 'Server error adding member' })
+    }
+})
+
+// @route   DELETE /api/projects/:id/members/:userId
+// @desc    Remove a member from a project
+router.delete('/:id/members/:userId', async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id)
+
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' })
+        }
+
+        // Remove member
+        project.members = project.members.filter(
+            memberId => memberId.toString() !== req.params.userId
+        )
+        await project.save()
+
+        const updatedProject = await Project.findById(project._id)
+            .populate('owner', 'name username email avatar')
+            .populate('members', 'name username email avatar')
+
+        res.json(updatedProject)
+    } catch (error) {
+        console.error('Error removing member:', error)
+        res.status(500).json({ message: 'Server error removing member' })
     }
 })
 

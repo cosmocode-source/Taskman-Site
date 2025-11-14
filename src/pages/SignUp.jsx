@@ -7,6 +7,7 @@ function SignUp() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -63,13 +64,18 @@ function SignUp() {
     setError('');
 
     // Validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.name || !formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
 
     if (formData.name.length < 2) {
       setError('Name must be at least 2 characters long');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(formData.username)) {
+      setError('Username must be 3-20 characters and can only contain letters, numbers, and underscores');
       return;
     }
 
@@ -98,6 +104,7 @@ function SignUp() {
     try {
       const response = await authAPI.register({
         name: formData.name,
+        username: formData.username,
         email: formData.email,
         password: formData.password
       });
@@ -150,6 +157,23 @@ function SignUp() {
                   disabled={loading}
                 />
               </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+              <div className="input-with-icon">
+                <i className="fas fa-at"></i>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="Choose a username"
+                  disabled={loading}
+                />
+              </div>
+              <p className="field-hint">3-20 characters, letters, numbers, and underscores only</p>
             </div>
 
             <div className="form-group">

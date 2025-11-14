@@ -9,17 +9,30 @@ const router = express.Router()
 // @desc    Register a new user
 router.post('/register', async (req, res) => {
     try {
-        const { name, email, password } = req.body
+        const { name, username, email, password } = req.body
 
         // Validation
-        if (!name || !email || !password) {
+        if (!name || !username || !email || !password) {
             return res.status(400).json({ message: 'Please provide all required fields' })
         }
 
-        // Check if user exists
-        const userExists = await User.findOne({ email: email.toLowerCase() })
-        if (userExists) {
+        // Validate username format
+        const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
+        if (!usernameRegex.test(username)) {
+            return res.status(400).json({
+                message: 'Username must be 3-20 characters and can only contain letters, numbers, and underscores'
+            })
+        }
+
+        // Check if user exists with email or username
+        const emailExists = await User.findOne({ email: email.toLowerCase() })
+        if (emailExists) {
             return res.status(400).json({ message: 'User already exists with this email' })
+        }
+
+        const usernameExists = await User.findOne({ username: username.toLowerCase() })
+        if (usernameExists) {
+            return res.status(400).json({ message: 'Username is already taken' })
         }
 
         // Hash password
@@ -29,6 +42,7 @@ router.post('/register', async (req, res) => {
         // Create new user
         const user = await User.create({
             name,
+            username: username.toLowerCase(),
             email: email.toLowerCase(),
             password: hashedPassword
         })
@@ -46,6 +60,7 @@ router.post('/register', async (req, res) => {
             user: {
                 _id: user._id,
                 name: user.name,
+                username: user.username,
                 email: user.email,
                 avatar: user.avatar
             }
@@ -92,6 +107,7 @@ router.post('/login', async (req, res) => {
             user: {
                 _id: user._id,
                 name: user.name,
+                username: user.username,
                 email: user.email,
                 avatar: user.avatar
             }

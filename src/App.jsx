@@ -7,8 +7,12 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
+import Dashboard from './pages/Dashboard'
+import Announcements from './pages/Announcements'
 import Projects from './pages/Projects'
+import NewProject from './pages/NewProject'
 import Tasks from './pages/Tasks'
+import KanbanBoard from './pages/KanbanBoard'
 import Calendar from './pages/Calendar'
 import Discussion from './pages/Discussion'
 import Files from './pages/Files'
@@ -21,6 +25,14 @@ function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/projects" 
           element={
             <ProtectedRoute>
@@ -29,10 +41,42 @@ function App() {
           } 
         />
         <Route 
+          path="/projects/new" 
+          element={
+            <ProtectedRoute>
+              <NewProject />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/all-tasks" 
+          element={
+            <ProtectedRoute>
+              <Projects />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/announcements" 
+          element={
+            <ProtectedRoute>
+              <Announcements />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/project/:projectId/tasks" 
           element={
             <ProtectedRoute>
               <Tasks />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/project/:projectId/kanban" 
+          element={
+            <ProtectedRoute>
+              <KanbanBoard />
             </ProtectedRoute>
           } 
         />

@@ -1,19 +1,33 @@
 import { useState, useEffect } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
+import { announcementsAPI } from '../services/api'
 import './Nav.css'
 
 function Nav() {
   const { projectId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [user, setUser] = useState(null)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [announcements, setAnnouncements] = useState([])
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (userData) {
       setUser(JSON.parse(userData))
+      fetchAnnouncements()
     }
   }, [])
+
+  const fetchAnnouncements = async () => {
+    try {
+      const response = await announcementsAPI.getAll()
+      setAnnouncements(response.data.slice(0, 5)) // Show latest 5
+    } catch (error) {
+      console.error('Error fetching announcements:', error)
+    }
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -26,7 +40,7 @@ function Nav() {
       <div className="nav-container">
         {/* Logo */}
         <div className="nav-brand">
-          <Link to={user ? "/projects" : "/"}>
+          <Link to={user ? "/dashboard" : "/"}>
             <span className="logo">✓</span>
             TaskMan
           </Link>
@@ -44,9 +58,63 @@ function Nav() {
         <div className="nav-icons">
           {user ? (
             <>
-              <button className="icon-btn" title="Notifications">
-                <i className="far fa-bell"></i>
-              </button>
+              <div className="notification-wrapper">
+                <button 
+                  className="icon-btn" 
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  title="Notifications"
+                >
+                  <i className="far fa-bell"></i>
+                  {announcements.length > 0 && (
+                    <span className="notification-badge">{announcements.length}</span>
+                  )}
+                </button>
+                {showNotifications && (
+                  <div className="notifications-dropdown">
+                    <div className="notifications-header">
+                      <h3>Recent Announcements</h3>
+                      <button 
+                        className="close-notifications"
+                        onClick={() => setShowNotifications(false)}
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                    <div className="notifications-list">
+                      {announcements.length > 0 ? (
+                        <>
+                          {announcements.map(announcement => (
+                            <div key={announcement._id} className="notification-item">
+                              <i className={announcement.icon}></i>
+                              <div className="notification-content">
+                                <div className="notification-title">{announcement.title}</div>
+                                <div className="notification-desc">{announcement.description}</div>
+                                {announcement.project && (
+                                  <div className="notification-project" style={{ color: announcement.project.color }}>
+                                    <i className="fas fa-folder"></i> {announcement.project.name}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                          <Link 
+                            to="/announcements" 
+                            className="view-all-notifications"
+                            onClick={() => setShowNotifications(false)}
+                          >
+                            View All Announcements
+                          </Link>
+                        </>
+                      ) : (
+                        <div className="no-notifications">
+                          <i className="far fa-bell-slash"></i>
+                          <p>No announcements</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="user-menu">
                 <button 
                   className="icon-btn profile" 
@@ -59,12 +127,21 @@ function Nav() {
                   <div className="dropdown-menu">
                     <div className="dropdown-header">
                       <div className="dropdown-user-name">{user.name}</div>
+                      <div className="dropdown-user-username">@{user.username}</div>
                       <div className="dropdown-user-email">{user.email}</div>
                     </div>
                     <div className="dropdown-divider"></div>
+                    <Link to="/dashboard" className="dropdown-item">
+                      <i className="fas fa-home"></i>
+                      Dashboard
+                    </Link>
                     <Link to="/projects" className="dropdown-item">
                       <i className="fas fa-folder"></i>
                       My Projects
+                    </Link>
+                    <Link to="/announcements" className="dropdown-item">
+                      <i className="fas fa-bullhorn"></i>
+                      Announcements
                     </Link>
                     <button onClick={handleLogout} className="dropdown-item logout">
                       <i className="fas fa-sign-out-alt"></i>
@@ -86,10 +163,11 @@ function Nav() {
       {projectId && user && (
         <div className="nav-links-container">
           <ul className="nav-links">
-            <li><Link to={`/project/${projectId}/tasks`}><i className="fas fa-tasks"></i> Tasks</Link></li>
-            <li><Link to={`/project/${projectId}/calendar`}><i className="far fa-calendar"></i> Calendar</Link></li>
-            <li><Link to={`/project/${projectId}/discussion`}><i className="far fa-comments"></i> Discussion</Link></li>
-            <li><Link to={`/project/${projectId}/files`}><i className="far fa-folder"></i> Files</Link></li>
+            <li><Link to={`/project/${projectId}/kanban`} className={location.pathname === `/project/${projectId}/kanban` ? 'active' : ''}><i className="fas fa-columns"></i> Kanban Board</Link></li>
+            <li><Link to={`/project/${projectId}/tasks`} className={location.pathname === `/project/${projectId}/tasks` ? 'active' : ''}><i className="fas fa-list-check"></i> Tasks</Link></li>
+            <li><Link to={`/project/${projectId}/calendar`} className={location.pathname === `/project/${projectId}/calendar` ? 'active' : ''}><i className="far fa-calendar"></i> Calendar</Link></li>
+            <li><Link to={`/project/${projectId}/discussion`} className={location.pathname === `/project/${projectId}/discussion` ? 'active' : ''}><i className="fas fa-comments"></i> Discussion</Link></li>
+            <li><Link to={`/project/${projectId}/files`} className={location.pathname === `/project/${projectId}/files` ? 'active' : ''}><i className="fas fa-folder"></i> Files</Link></li>
           </ul>
         </div>
       )}

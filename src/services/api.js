@@ -26,6 +26,8 @@ export const projectsAPI = {
     create: (data) => API.post('/projects', data),
     update: (id, data) => API.put(`/projects/${id}`, data),
     delete: (id) => API.delete(`/projects/${id}`),
+    addMember: (id, identifier) => API.post(`/projects/${id}/members`, { identifier }),
+    removeMember: (id, userId) => API.delete(`/projects/${id}/members/${userId}`),
 };
 
 // Tasks API
@@ -49,6 +51,13 @@ export const discussionsAPI = {
     create: (data) => API.post('/discussions', data),
     addReply: (id, data) => API.post(`/discussions/${id}/reply`, data),
     delete: (id) => API.delete(`/discussions/${id}`),
+};
+
+// Announcements API
+export const announcementsAPI = {
+    getAll: () => API.get('/announcements'),
+    create: (data) => API.post('/announcements', data),
+    delete: (id) => API.delete(`/announcements/${id}`),
 };
 
 export default API;

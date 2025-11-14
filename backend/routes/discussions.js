@@ -8,11 +8,14 @@ const router = express.Router()
 router.get('/project/:projectId', async (req, res) => {
     try {
         const discussions = await Discussion.find({ projectId: req.params.projectId })
-            .populate('author', 'name email')
-            .populate('replies.author', 'name email')
+            .populate('author', 'name username email avatar')
+            .populate('replies.author', 'name username email avatar')
+            .sort({ createdAt: -1 })
+
         res.json(discussions)
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        console.error('Error fetching discussions:', error)
+        res.status(500).json({ message: 'Server error fetching discussions' })
     }
 })
 
@@ -21,8 +24,8 @@ router.get('/project/:projectId', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const discussion = await Discussion.findById(req.params.id)
-            .populate('author', 'name email')
-            .populate('replies.author', 'name email')
+            .populate('author', 'name username email avatar')
+            .populate('replies.author', 'name username email avatar')
 
         if (!discussion) {
             return res.status(404).json({ message: 'Discussion not found' })
@@ -30,7 +33,8 @@ router.get('/:id', async (req, res) => {
 
         res.json(discussion)
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        console.error('Error fetching discussion:', error)
+        res.status(500).json({ message: 'Server error fetching discussion' })
     }
 })
 
@@ -40,16 +44,23 @@ router.post('/', async (req, res) => {
     try {
         const { projectId, author, message } = req.body
 
-        const newDiscussion = await Discussion.create({
+        if (!projectId || !author || !message) {
+            return res.status(400).json({ message: 'Please provide all required fields' })
+        }
+
+        const discussion = await Discussion.create({
             projectId,
             author,
-            message,
-            replies: []
+            message
         })
 
-        res.status(201).json(newDiscussion)
+        const populatedDiscussion = await Discussion.findById(discussion._id)
+            .populate('author', 'name username email avatar')
+
+        res.status(201).json(populatedDiscussion)
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        console.error('Error creating discussion:', error)
+        res.status(500).json({ message: 'Server error creating discussion' })
     }
 })
 
@@ -58,6 +69,10 @@ router.post('/', async (req, res) => {
 router.post('/:id/reply', async (req, res) => {
     try {
         const { author, message } = req.body
+
+        if (!author || !message) {
+            return res.status(400).json({ message: 'Please provide author and message' })
+        }
 
         const discussion = await Discussion.findById(req.params.id)
 
@@ -68,9 +83,14 @@ router.post('/:id/reply', async (req, res) => {
         discussion.replies.push({ author, message })
         await discussion.save()
 
-        res.json(discussion)
+        const populatedDiscussion = await Discussion.findById(discussion._id)
+            .populate('author', 'name username email avatar')
+            .populate('replies.author', 'name username email avatar')
+
+        res.json(populatedDiscussion)
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        console.error('Error adding reply:', error)
+        res.status(500).json({ message: 'Server error adding reply' })
     }
 })
 
@@ -78,15 +98,17 @@ router.post('/:id/reply', async (req, res) => {
 // @desc    Delete a discussion
 router.delete('/:id', async (req, res) => {
     try {
-        const discussion = await Discussion.findByIdAndDelete(req.params.id)
+        const discussion = await Discussion.findById(req.params.id)
 
         if (!discussion) {
             return res.status(404).json({ message: 'Discussion not found' })
         }
 
+        await Discussion.findByIdAndDelete(req.params.id)
         res.json({ message: 'Discussion deleted successfully' })
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        console.error('Error deleting discussion:', error)
+        res.status(500).json({ message: 'Server error deleting discussion' })
     }
 })
 

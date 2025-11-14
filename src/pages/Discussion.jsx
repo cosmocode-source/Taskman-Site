@@ -152,14 +152,15 @@ function Discussion() {
             discussions.map((discussion) => (
               <div key={discussion._id} className="discussion-card">
                 <div className="discussion-header">
-                  <img 
-                    src={discussion.author?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
-                    alt={discussion.author?.name || 'User'}
-                    className="user-avatar"
-                  />
+                  <div className="user-avatar-icon">
+                    <i className="fas fa-user-circle"></i>
+                  </div>
                   <div className="discussion-info">
                     <div className="discussion-author">
                       {discussion.author?.name || 'Unknown User'}
+                      {discussion.author?.username && (
+                        <span className="discussion-username"> @{discussion.author.username}</span>
+                      )}
                     </div>
                     <div className="discussion-time">
                       {formatTime(discussion.createdAt)}
@@ -189,14 +190,15 @@ function Discussion() {
                     {discussion.replies.map((reply, idx) => (
                       <div key={idx} className="reply-card">
                         <div className="discussion-header">
-                          <img 
-                            src={reply.author?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
-                            alt={reply.author?.name || 'User'}
-                            className="user-avatar"
-                          />
+                          <div className="user-avatar-icon">
+                            <i className="fas fa-user-circle"></i>
+                          </div>
                           <div className="discussion-info">
                             <div className="discussion-author">
                               {reply.author?.name || 'Unknown User'}
+                              {reply.author?.username && (
+                                <span className="discussion-username"> @{reply.author.username}</span>
+                              )}
                             </div>
                             <div className="discussion-time">
                               {formatTime(reply.createdAt)}

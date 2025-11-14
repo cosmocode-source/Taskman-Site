@@ -45,7 +45,7 @@ function SignIn() {
       localStorage.setItem('user', JSON.stringify(response.data.user));
       
       // Navigate to dashboard
-      navigate('/projects');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
     } finally {

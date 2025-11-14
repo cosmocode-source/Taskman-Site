@@ -6,10 +6,10 @@ function Home() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // If user is logged in, redirect to projects
+    // If user is logged in, redirect to dashboard
     const token = localStorage.getItem('token')
     if (token) {
-      navigate('/projects')
+      navigate('/dashboard')
     }
   }, [navigate])
 
