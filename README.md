@@ -6,10 +6,7 @@ TaskMan is a full-stack, collaborative project management application designed t
 The system supports task prioritization, project-based file management, team collaboration via discussions, and a dedicated announcement system to keep all team members informed.
 
 
-
-
-
-
+<img width="406" height="173" alt="image" src="https://github.com/user-attachments/assets/5897d37d-a560-4fb1-be81-209ef0301c38" />
 
 
 ## 💻 Installation
