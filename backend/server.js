@@ -2,6 +2,10 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import connectDB from './config/db.js'
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Import routes
 import authRoutes from './routes/auth.js'
@@ -32,10 +36,14 @@ app.use('/api/files', fileRoutes)
 app.use('/api/discussions', discussionRoutes)
 app.use('/api/announcements', announcementRoutes)
 
-// Health check
-app.get('/', (req, res) => {
-    res.json({ message: 'TaskMan API is running' })
-})
+//Ths is for the tunnling for the ngrok
+
+app.use(express.static(path.join(__dirname, "../dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist", "index.html"));
+});
+
 
 // Start server
 app.listen(PORT, () => {
