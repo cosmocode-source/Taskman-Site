@@ -6,10 +6,7 @@ TaskMan is a full-stack, collaborative project management application designed t
 The system supports task prioritization, project-based file management, team collaboration via discussions, and a dedicated announcement system to keep all team members informed.
 
 
-
-
-
-
+<img width="406" height="173" alt="image" src="https://github.com/user-attachments/assets/5897d37d-a560-4fb1-be81-209ef0301c38" />
 
 
 ## 💻 Installation
@@ -54,31 +51,24 @@ The application will typically open at http://localhost:3000.
     
 ## Documentation
 
-Project Management & Collaboration
+### Project Management & Collaboration
 
-->Full CRUD Project Management: Create, read, update, and delete projects. Projects can be marked as active or completed.
+#### Full CRUD Project Management:
+Create, read, update, and delete projects. Projects can be marked as active or completed.
 
 Team Member Management: Project owners can invite members by email to projects. Invitations track pending, accepted, or rejected status.
-
 Project Discussions: Supports two types of real-time communication:
-
 Public Discussions for project-wide communication.
-
 Private Chats between users, tracking messages and replies.
-
 File Management: Upload, view, and delete project-specific files, including tracking the uploader.
-
 Project-Specific Announcements: Create prioritized, project-linked announcements with customizable icons (e.g., fas fa-bullhorn).
 
-Task & Workflow
+#### Task & Workflow
 Detailed Task Tracking: Tasks are linked to a project, assigned to a user, and include a description and due date.
-
 Task Statuses: Tasks move through a workflow defined by the statuses: proposed, todo, in-progress, and done.
-
 Priority System: Tasks and announcements can be categorized by low, medium, or high priority.
 
-User & Security
+#### User & Security
 User Schema: Unique username and email validation, with avatar support.
-
 Authentication: The API service uses an interceptor to include a stored authentication token (Bearer ${token}) with every request for secure access.
 
