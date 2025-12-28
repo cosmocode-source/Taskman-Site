@@ -2,6 +2,7 @@ import React from 'react'
 import './App.css'
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import { ToastProvider } from './components/ToastProvider'
 
 // Import page components
 import Home from './pages/Home'
@@ -21,11 +22,12 @@ import CompletedProjects from './pages/CompletedProjects'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
         <Route 
           path="/dashboard" 
           element={
@@ -118,6 +120,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </ToastProvider>
   )
 }
 

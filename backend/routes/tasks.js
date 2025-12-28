@@ -1,5 +1,6 @@
 import express from 'express'
 import Task from '../models/Task.js'
+import Notification from '../models/Notification.js'
 
 const router = express.Router()
 
@@ -59,6 +60,23 @@ router.post('/', async (req, res) => {
         const populatedTask = await Task.findById(task._id)
             .populate('assignedTo', 'name username email')
 
+        // Create notification if task is assigned to someone
+        if (assignedTo) {
+            try {
+                await Notification.create({
+                    recipient: assignedTo,
+                    type: 'task_assigned',
+                    title: 'New Task Assigned',
+                    message: `You have been assigned to: ${title}`,
+                    relatedTask: task._id,
+                    relatedProject: projectId,
+                    link: `/project/${projectId}/tasks`
+                })
+            } catch (err) {
+                console.error('Error creating notification:', err)
+            }
+        }
+
         res.status(201).json(populatedTask)
     } catch (error) {
         console.error('Error creating task:', error)
@@ -77,6 +95,8 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({ message: 'Task not found' })
         }
 
+        const oldStatus = task.status
+
         task.title = title || task.title
         task.description = description !== undefined ? description : task.description
         task.status = status || task.status
@@ -87,6 +107,23 @@ router.put('/:id', async (req, res) => {
 
         const populatedTask = await Task.findById(task._id)
             .populate('assignedTo', 'name username email')
+
+        // Create notification if task was completed
+        if (status === 'done' && oldStatus !== 'done' && task.assignedTo) {
+            try {
+                await Notification.create({
+                    recipient: task.assignedTo,
+                    type: 'task_completed',
+                    title: 'Task Completed',
+                    message: `Task "${task.title}" has been marked as complete`,
+                    relatedTask: task._id,
+                    relatedProject: task.projectId,
+                    link: `/project/${task.projectId}/tasks`
+                })
+            } catch (err) {
+                console.error('Error creating notification:', err)
+            }
+        }
 
         res.json(populatedTask)
     } catch (error) {

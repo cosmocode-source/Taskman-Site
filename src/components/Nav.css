@@ -196,6 +196,30 @@
   color: #ffffff;
 }
 
+.notification-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mark-all-read {
+  background: none;
+  border: none;
+  color: #3498db;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mark-all-read:hover {
+  background: rgba(52, 152, 219, 0.1);
+}
+
 .close-notifications {
   background: none;
   border: none;
@@ -223,6 +247,11 @@
   padding: 16px 20px;
   border-bottom: 1px solid #2f3342;
   transition: background 0.2s;
+  position: relative;
+}
+
+.notification-item.unread {
+  background: rgba(52, 152, 219, 0.05);
 }
 
 .notification-item:hover {
@@ -233,11 +262,31 @@
   border-bottom: none;
 }
 
-.notification-item > i {
-  font-size: 20px;
-  color: #3498db;
-  margin-top: 2px;
+.notification-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(52, 152, 219, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+}
+
+.notification-icon i {
+  font-size: 16px;
+  color: #3498db;
+}
+
+.unread-indicator {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: #3498db;
+  border-radius: 50%;
 }
 
 .notification-content {
@@ -274,6 +323,12 @@
 
 .notification-project i {
   font-size: 10px;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: #7f8c8d;
+  margin-top: 4px;
 }
 
 .view-all-notifications {

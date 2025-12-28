@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
-import { announcementsAPI } from '../services/api'
+import { notificationsAPI } from '../services/api'
+import { useToast } from './ToastProvider'
 import './Nav.css'
 
 function Nav() {
   const { projectId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
+  const { showToast } = useToast()
   const [user, setUser] = useState(null)
   const [showDropdown, setShowDropdown] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
-  const [announcements, setAnnouncements] = useState([])
-  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [previousCount, setPreviousCount] = useState(0)
   const notificationRef = useRef(null)
   const dropdownRef = useRef(null)
 
@@ -19,7 +22,16 @@ function Nav() {
     const userData = localStorage.getItem('user')
     if (userData) {
       setUser(JSON.parse(userData))
-      fetchAnnouncements()
+      const parsedUser = JSON.parse(userData)
+      fetchNotifications(parsedUser._id)
+      fetchUnreadCount(parsedUser._id)
+      
+      // Poll for new notifications every 30 seconds
+      const pollInterval = setInterval(() => {
+        fetchUnreadCount(parsedUser._id)
+      }, 30000)
+      
+      return () => clearInterval(pollInterval)
     }
   }, [])
 
@@ -42,32 +54,64 @@ function Nav() {
     }
   }, [showNotifications, showDropdown])
 
-  const fetchAnnouncements = async () => {
+  const fetchNotifications = async (userId) => {
     try {
-      const response = await announcementsAPI.getAll()
-      setAnnouncements(response.data.slice(0, 5)) // Show latest 5
-      
-      // Check if user has viewed notifications
-      const lastViewedTime = localStorage.getItem('lastViewedNotifications')
-      if (response.data.length > 0 && lastViewedTime) {
-        const hasNewNotifications = response.data.some(announcement => 
-          new Date(announcement.createdAt) > new Date(lastViewedTime)
-        )
-        setHasUnreadNotifications(hasNewNotifications)
-      } else if (response.data.length > 0) {
-        setHasUnreadNotifications(true)
-      }
+      const response = await notificationsAPI.getByUser(userId, { limit: 10 })
+      setNotifications(response.data)
     } catch (error) {
-      console.error('Error fetching announcements:', error)
+      console.error('Error fetching notifications:', error)
     }
   }
 
-  const handleNotificationClick = () => {
+  const fetchUnreadCount = async (userId) => {
+    try {
+      const response = await notificationsAPI.getUnreadCount(userId)
+      const newCount = response.data.count
+      
+      // Show toast if count increased (new notification)
+      if (newCount > previousCount && previousCount > 0) {
+        const diff = newCount - previousCount
+        showToast(
+          diff === 1 ? 'You have a new notification' : `You have ${diff} new notifications`,
+          'notification'
+        )
+      }
+      
+      setPreviousCount(newCount)
+      setUnreadCount(newCount)
+    } catch (error) {
+      console.error('Error fetching unread count:', error)
+    }
+  }
+
+  const handleNotificationClick = async () => {
     setShowNotifications(!showNotifications)
-    if (!showNotifications) {
-      // Mark notifications as read
-      localStorage.setItem('lastViewedNotifications', new Date().toISOString())
-      setHasUnreadNotifications(false)
+    if (!showNotifications && user) {
+      // Fetch latest notifications when opening
+      await fetchNotifications(user._id)
+    }
+  }
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await notificationsAPI.markAsRead(notificationId)
+      setNotifications(notifications.map(n => 
+        n._id === notificationId ? { ...n, read: true } : n
+      ))
+      setUnreadCount(Math.max(0, unreadCount - 1))
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
+    }
+  }
+
+  const handleMarkAllAsRead = async () => {
+    if (!user) return
+    try {
+      await notificationsAPI.markAllAsRead(user._id)
+      setNotifications(notifications.map(n => ({ ...n, read: true })))
+      setUnreadCount(0)
+    } catch (error) {
+      console.error('Error marking all as read:', error)
     }
   }
 
@@ -75,6 +119,35 @@ function Nav() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     navigate('/signin')
+  }
+
+  const getNotificationIcon = (type) => {
+    const iconMap = {
+      'task_assigned': 'fas fa-tasks',
+      'task_updated': 'fas fa-edit',
+      'task_completed': 'fas fa-check-circle',
+      'project_invitation': 'fas fa-envelope',
+      'member_added': 'fas fa-user-plus',
+      'announcement': 'fas fa-bullhorn',
+      'discussion_mention': 'fas fa-at',
+      'file_uploaded': 'fas fa-file-upload'
+    }
+    return iconMap[type] || 'fas fa-bell'
+  }
+
+  const formatNotificationTime = (date) => {
+    const now = new Date()
+    const notifDate = new Date(date)
+    const diffMs = now - notifDate
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return notifDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
   return (
@@ -107,36 +180,68 @@ function Nav() {
                   title="Notifications"
                 >
                   <i className="far fa-bell"></i>
-                  {hasUnreadNotifications && announcements.length > 0 && (
-                    <span className="notification-badge">{announcements.length}</span>
+                  {unreadCount > 0 && (
+                    <span className="notification-badge">{unreadCount}</span>
                   )}
                 </button>
                 {showNotifications && (
                   <div className="notifications-dropdown">
                     <div className="notifications-header">
-                      <h3>Recent Announcements</h3>
-                      <button 
-                        className="close-notifications"
-                        onClick={() => setShowNotifications(false)}
-                      >
-                        <i className="fas fa-times"></i>
-                      </button>
+                      <h3>Notifications</h3>
+                      <div className="notification-actions">
+                        {unreadCount > 0 && (
+                          <button 
+                            className="mark-all-read"
+                            onClick={handleMarkAllAsRead}
+                            title="Mark all as read"
+                          >
+                            <i className="fas fa-check-double"></i>
+                          </button>
+                        )}
+                        <button 
+                          className="close-notifications"
+                          onClick={() => setShowNotifications(false)}
+                        >
+                          <i className="fas fa-times"></i>
+                        </button>
+                      </div>
                     </div>
                     <div className="notifications-list">
-                      {announcements.length > 0 ? (
+                      {notifications.length > 0 ? (
                         <>
-                          {announcements.map(announcement => (
-                            <div key={announcement._id} className="notification-item">
-                              <i className={announcement.icon}></i>
+                          {notifications.map(notification => (
+                            <div 
+                              key={notification._id} 
+                              className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                              onClick={() => {
+                                if (!notification.read) {
+                                  handleMarkAsRead(notification._id)
+                                }
+                                if (notification.link) {
+                                  navigate(notification.link)
+                                  setShowNotifications(false)
+                                }
+                              }}
+                              style={{ cursor: notification.link ? 'pointer' : 'default' }}
+                            >
+                              <div className="notification-icon">
+                                <i className={getNotificationIcon(notification.type)}></i>
+                              </div>
                               <div className="notification-content">
-                                <div className="notification-title">{announcement.title}</div>
-                                <div className="notification-desc">{announcement.description}</div>
-                                {announcement.project && (
-                                  <div className="notification-project" style={{ color: announcement.project.color }}>
-                                    <i className="fas fa-folder"></i> {announcement.project.name}
+                                <div className="notification-title">{notification.title}</div>
+                                <div className="notification-desc">{notification.message}</div>
+                                {notification.relatedProject && (
+                                  <div className="notification-project" style={{ color: notification.relatedProject.color }}>
+                                    <i className="fas fa-folder"></i> {notification.relatedProject.name}
                                   </div>
                                 )}
+                                <div className="notification-time">
+                                  {formatNotificationTime(notification.createdAt)}
+                                </div>
                               </div>
+                              {!notification.read && (
+                                <div className="unread-indicator"></div>
+                              )}
                             </div>
                           ))}
                           <Link 

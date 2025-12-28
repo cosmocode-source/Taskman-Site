@@ -73,4 +73,15 @@ export const invitationsAPI = {
     create: (data) => API.post('/invitations/create', data),
 };
 
+// Notifications API
+export const notificationsAPI = {
+    getByUser: (userId, params) => API.get(`/notifications/user/${userId}`, { params }),
+    getUnreadCount: (userId) => API.get(`/notifications/unread-count/${userId}`),
+    create: (data) => API.post('/notifications', data),
+    markAsRead: (id) => API.patch(`/notifications/${id}/read`),
+    markAllAsRead: (userId) => API.patch(`/notifications/mark-all-read/${userId}`),
+    delete: (id) => API.delete(`/notifications/${id}`),
+    clearRead: (userId) => API.delete(`/notifications/clear/${userId}`),
+};
+
 export default API;

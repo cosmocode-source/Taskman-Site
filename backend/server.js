@@ -15,6 +15,7 @@ import fileRoutes from './routes/files.js'
 import discussionRoutes from './routes/discussions.js'
 import announcementRoutes from './routes/announcements.js'
 import invitationRoutes from './routes/invitations.js'
+import notificationRoutes from './routes/notifications.js'
 
 dotenv.config()
 
@@ -37,6 +38,7 @@ app.use('/api/files', fileRoutes)
 app.use('/api/discussions', discussionRoutes)
 app.use('/api/announcements', announcementRoutes)
 app.use('/api/invitations', invitationRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 //Ths is for the tunnling for the ngrok
 

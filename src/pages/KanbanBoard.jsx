@@ -31,6 +31,16 @@ function KanbanBoard() {
   useEffect(() => {
     fetchTasks()
     fetchProject()
+
+    // Set up polling for real-time updates every 10 seconds
+    const pollInterval = setInterval(() => {
+      fetchTasks()
+    }, 10000)
+
+    // Cleanup interval on unmount
+    return () => {
+      clearInterval(pollInterval)
+    }
   }, [projectId])
 
   useEffect(() => {
