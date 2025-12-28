@@ -319,6 +319,7 @@ function Nav() {
             <li><Link to={`/project/${projectId}/calendar`} className={location.pathname === `/project/${projectId}/calendar` ? 'active' : ''}><i className="far fa-calendar"></i> Calendar</Link></li>
             <li><Link to={`/project/${projectId}/discussion`} className={location.pathname === `/project/${projectId}/discussion` ? 'active' : ''}><i className="fas fa-comments"></i> Discussion</Link></li>
             <li><Link to={`/project/${projectId}/files`} className={location.pathname === `/project/${projectId}/files` ? 'active' : ''}><i className="fas fa-folder"></i> Files</Link></li>
+            <li><Link to={`/project/${projectId}/settings`} className={location.pathname === `/project/${projectId}/settings` ? 'active' : ''}><i className="fas fa-cog"></i> Settings</Link></li>
           </ul>
         </div>
       )}

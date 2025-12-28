@@ -31,16 +31,6 @@ function KanbanBoard() {
   useEffect(() => {
     fetchTasks()
     fetchProject()
-
-    // Set up polling for real-time updates every 10 seconds
-    const pollInterval = setInterval(() => {
-      fetchTasks()
-    }, 10000)
-
-    // Cleanup interval on unmount
-    return () => {
-      clearInterval(pollInterval)
-    }
   }, [projectId])
 
   useEffect(() => {
@@ -68,9 +58,11 @@ function KanbanBoard() {
     }
   }
 
-  const fetchTasks = async () => {
+  const fetchTasks = async (showLoading = true) => {
     try {
-      setLoading(true)
+      if (showLoading) {
+        setLoading(true)
+      }
       const response = await tasksAPI.getByProject(projectId)
       setTasks(response.data)
       setError(null)
@@ -78,7 +70,9 @@ function KanbanBoard() {
       setError(err.response?.data?.message || 'Failed to load tasks')
       console.error('Error fetching tasks:', err)
     } finally {
-      setLoading(false)
+      if (showLoading) {
+        setLoading(false)
+      }
     }
   }
 
@@ -90,7 +84,9 @@ function KanbanBoard() {
   ]
 
   const getTasksByStatus = (status) => {
-    return tasks.filter(task => task.status === status)
+    return tasks
+      .filter(task => task.status === status)
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
   }
 
   const handleDragStart = (e, task) => {
@@ -106,7 +102,10 @@ function KanbanBoard() {
   const handleDrop = async (e, newStatus) => {
     e.preventDefault()
     
-    if (!draggedTask || draggedTask.status === newStatus) {
+    if (!draggedTask) return
+
+    // Only update if status changed
+    if (draggedTask.status === newStatus) {
       setDraggedTask(null)
       return
     }
@@ -402,20 +401,11 @@ function KanbanBoard() {
           </div>
 
           <div className="kanban-top-right">
-            {project?.status === 'completed' ? (
+            {project?.status === 'completed' && (
               <span className="project-completed-pill">
                 <i className="fas fa-check-circle"></i>
                 Completed
               </span>
-            ) : (
-              <button
-                type="button"
-                className="btn-finish-project"
-                onClick={handleCompleteProject}
-              >
-                <i className="fas fa-flag-checkered"></i>
-                Mark Project as Completed
-              </button>
             )}
           </div>
         </div>
@@ -435,15 +425,15 @@ function KanbanBoard() {
               </div>
               
               <div className="column-content">
-                {getTasksByStatus(column.id).map(task => (
+                {getTasksByStatus(column.id).map((task, index) => (
                   <div
                     key={task._id}
-                    className="kanban-card"
+                    className={`kanban-card ${draggedTask?._id === task._id ? 'dragging' : ''}`}
                     draggable
                     onDragStart={(e) => handleDragStart(e, task)}
                     onContextMenu={(e) => handleContextMenu(e, task)}
                   >
-                    <div className="card-header">
+                  <div className="card-header">
                       <h4 className="card-title">{task.title}</h4>
                       <div className="card-actions">
                         {task.status !== 'done' && (
@@ -560,8 +550,10 @@ function KanbanBoard() {
                     <p>No tasks</p>
                   </div>
                 )}
-                
-                {/* Quick Add Task */}
+              </div>
+              
+              {/* Quick Add Task - Inside column but below scrollable content */}
+              <div className="column-footer">
                 {quickAddColumn === column.id ? (
                   <form onSubmit={(e) => handleQuickAddTask(e, column.id)} className="quick-add-form">
                     <input

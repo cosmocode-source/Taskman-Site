@@ -1,0 +1,10 @@
+TODO - Features to implement later:
+
+1. Task drag-and-drop reordering within columns
+   - Allow tasks to be reordered by dragging within the same kanban column
+   - Show ghost placeholder indicating drop position
+   - Update order field in database
+
+2. Task list view
+   - Add "View as List" button to see tasks in list format
+   - Alternative view to the kanban board

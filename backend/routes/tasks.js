@@ -11,7 +11,7 @@ router.get('/project/:projectId', async (req, res) => {
         const tasks = await Task.find({ projectId: req.params.projectId })
             .populate('assignedTo', 'name username email')
             .sort({ createdAt: -1 })
-        
+
         res.json(tasks)
     } catch (error) {
         console.error('Error fetching tasks:', error)

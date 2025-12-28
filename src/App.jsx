@@ -19,6 +19,7 @@ import Calendar from './pages/Calendar'
 import Discussion from './pages/Discussion'
 import Files from './pages/Files'
 import CompletedProjects from './pages/CompletedProjects'
+import ProjectSettings from './pages/ProjectSettings'
 
 function App() {
   return (
@@ -113,6 +114,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Files />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/project/:projectId/settings" 
+          element={
+            <ProtectedRoute>
+              <ProjectSettings />
             </ProtectedRoute>
           } 
         />

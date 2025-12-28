@@ -8,7 +8,7 @@ const router = express.Router()
 router.get('/user/:userId', async (req, res) => {
     try {
         const { limit = 50, unreadOnly = false } = req.query
-        
+
         const query = { recipient: req.params.userId }
         if (unreadOnly === 'true') {
             query.read = false
