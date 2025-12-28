@@ -21,11 +21,33 @@ function KanbanBoard() {
     dueDate: ''
   })
   const [creating, setCreating] = useState(false)
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, task: null })
+  const [quickAddColumn, setQuickAddColumn] = useState(null)
+  const [quickTaskTitle, setQuickTaskTitle] = useState('')
+  const [quickTaskDescription, setQuickTaskDescription] = useState('')
+  const [editingDescriptionId, setEditingDescriptionId] = useState(null)
+  const [tempDescription, setTempDescription] = useState('')
 
   useEffect(() => {
     fetchTasks()
     fetchProject()
   }, [projectId])
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setContextMenu({ visible: false, x: 0, y: 0, task: null })
+    }
+    
+    if (contextMenu.visible) {
+      document.addEventListener('click', handleClickOutside)
+      document.addEventListener('contextmenu', handleClickOutside)
+    }
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+      document.removeEventListener('contextmenu', handleClickOutside)
+    }
+  }, [contextMenu.visible])
 
   const fetchProject = async () => {
     try {
@@ -161,6 +183,51 @@ function KanbanBoard() {
     }
   }
 
+  const handleQuickAddTask = async (e, columnId) => {
+    e.preventDefault()
+    
+    if (!quickTaskTitle.trim()) {
+      setQuickAddColumn(null)
+      setQuickTaskTitle('')
+      setQuickTaskDescription('')
+      return
+    }
+
+    try {
+      const user = JSON.parse(localStorage.getItem('user'))
+      const response = await tasksAPI.create({
+        title: quickTaskTitle,
+        description: quickTaskDescription,
+        status: columnId,
+        priority: 'medium',
+        projectId,
+        assignedTo: user?._id
+      })
+      
+      setTasks([response.data, ...tasks])
+      setQuickTaskTitle('')
+      setQuickTaskDescription('')
+      setQuickAddColumn(null)
+    } catch (err) {
+      console.error('Error creating task:', err)
+      alert('Failed to create task')
+    }
+  }
+
+  const handleSaveDescription = async (taskId) => {
+    try {
+      const response = await tasksAPI.update(taskId, {
+        description: tempDescription
+      })
+      setTasks(tasks.map(t => t._id === taskId ? response.data : t))
+      setEditingDescriptionId(null)
+      setTempDescription('')
+    } catch (err) {
+      console.error('Error updating description:', err)
+      alert('Failed to update description')
+    }
+  }
+
   const handleModalClose = () => {
     setShowModal(false)
     setEditingTask(null)
@@ -179,6 +246,55 @@ function KanbanBoard() {
       case 'medium': return '#ffc107'
       case 'low': return '#17a2b8'
       default: return '#6c757d'
+    }
+  }
+
+  const handleContextMenu = (e, task) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log('Right-clicked task:', task.title)
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      task
+    })
+  }
+
+  const handleStatusChange = async (newStatus, task = null) => {
+    const targetTask = task || contextMenu.task
+    if (!targetTask) return
+
+    try {
+      const response = await tasksAPI.update(targetTask._id, {
+        ...targetTask,
+        status: newStatus
+      })
+      
+      setTasks(tasks.map(t => 
+        t._id === targetTask._id ? response.data : t
+      ))
+      
+      if (contextMenu.task) {
+        setContextMenu({ visible: false, x: 0, y: 0, task: null })
+      }
+    } catch (err) {
+      console.error('Error updating task status:', err)
+      alert('Failed to update task status')
+    }
+  }
+
+  const handleContextEdit = () => {
+    if (contextMenu.task) {
+      handleEditTask(contextMenu.task)
+      setContextMenu({ visible: false, x: 0, y: 0, task: null })
+    }
+  }
+
+  const handleContextDelete = () => {
+    if (contextMenu.task) {
+      handleDeleteTask(contextMenu.task._id)
+      setContextMenu({ visible: false, x: 0, y: 0, task: null })
     }
   }
 
@@ -315,10 +431,23 @@ function KanbanBoard() {
                     className="kanban-card"
                     draggable
                     onDragStart={(e) => handleDragStart(e, task)}
+                    onContextMenu={(e) => handleContextMenu(e, task)}
                   >
                     <div className="card-header">
                       <h4 className="card-title">{task.title}</h4>
                       <div className="card-actions">
+                        {task.status !== 'done' && (
+                          <button 
+                            className="card-action-btn complete"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleStatusChange('done', task)
+                            }}
+                            title="Mark as complete"
+                          >
+                            <i className="fas fa-check"></i>
+                          </button>
+                        )}
                         <button 
                           className="card-action-btn"
                           onClick={() => handleEditTask(task)}
@@ -336,8 +465,52 @@ function KanbanBoard() {
                       </div>
                     </div>
                     
-                    {task.description && (
+                    {editingDescriptionId === task._id ? (
+                      <div className="inline-description-edit">
+                        <textarea
+                          value={tempDescription}
+                          onChange={(e) => setTempDescription(e.target.value)}
+                          placeholder="Add description..."
+                          autoFocus
+                          className="inline-description-textarea"
+                          rows="2"
+                        />
+                        <div className="inline-description-actions">
+                          <button 
+                            className="inline-desc-btn save"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSaveDescription(task._id)
+                            }}
+                          >
+                            <i className="fas fa-check"></i>
+                          </button>
+                          <button 
+                            className="inline-desc-btn cancel"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingDescriptionId(null)
+                              setTempDescription('')
+                            }}
+                          >
+                            <i className="fas fa-times"></i>
+                          </button>
+                        </div>
+                      </div>
+                    ) : task.description ? (
                       <p className="card-description">{task.description}</p>
+                    ) : (
+                      <button 
+                        className="add-description-btn"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingDescriptionId(task._id)
+                          setTempDescription(task.description || '')
+                        }}
+                      >
+                        <i className="fas fa-plus"></i>
+                        Add description
+                      </button>
                     )}
                     
                     <div className="card-footer">
@@ -377,11 +550,107 @@ function KanbanBoard() {
                     <p>No tasks</p>
                   </div>
                 )}
+                
+                {/* Quick Add Task */}
+                {quickAddColumn === column.id ? (
+                  <form onSubmit={(e) => handleQuickAddTask(e, column.id)} className="quick-add-form">
+                    <input
+                      type="text"
+                      value={quickTaskTitle}
+                      onChange={(e) => setQuickTaskTitle(e.target.value)}
+                      placeholder="Enter task title..."
+                      autoFocus
+                      className="quick-add-input"
+                    />
+                    <textarea
+                      value={quickTaskDescription}
+                      onChange={(e) => setQuickTaskDescription(e.target.value)}
+                      placeholder="Add description (optional)..."
+                      className="quick-add-textarea"
+                      rows="2"
+                    />
+                    <div className="quick-add-actions">
+                      <button type="submit" className="quick-add-btn save">
+                        <i className="fas fa-check"></i>
+                      </button>
+                      <button 
+                        type="button" 
+                        className="quick-add-btn cancel"
+                        onClick={() => {
+                          setQuickAddColumn(null)
+                          setQuickTaskTitle('')
+                          setQuickTaskDescription('')
+                        }}
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <button 
+                    className="column-quick-add"
+                    onClick={() => setQuickAddColumn(column.id)}
+                  >
+                    <i className="fas fa-plus"></i>
+                    Add task
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu.visible && (
+        <div 
+          className="context-menu" 
+          style={{ 
+            position: 'fixed',
+            top: `${contextMenu.y}px`, 
+            left: `${contextMenu.x}px`,
+            zIndex: 999999
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <div className="context-menu-section">
+            <div className="context-menu-label">Move to</div>
+            {columns.map(column => (
+              <button
+                key={column.id}
+                className={`context-menu-item ${contextMenu.task?.status === column.id ? 'active' : ''}`}
+                onClick={() => handleStatusChange(column.id)}
+                disabled={contextMenu.task?.status === column.id}
+              >
+                <div 
+                  className="status-indicator" 
+                  style={{ backgroundColor: column.color }}
+                ></div>
+                {column.title}
+                {contextMenu.task?.status === column.id && (
+                  <i className="fas fa-check"></i>
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="context-menu-divider"></div>
+          <button
+            className="context-menu-item"
+            onClick={handleContextEdit}
+          >
+            <i className="fas fa-edit"></i>
+            Edit Task
+          </button>
+          <button
+            className="context-menu-item danger"
+            onClick={handleContextDelete}
+          >
+            <i className="fas fa-trash"></i>
+            Delete Task
+          </button>
+        </div>
+      )}
 
       {/* Create/Edit Task Modal */}
       {showModal && (

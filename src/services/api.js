@@ -45,6 +45,7 @@ export const filesAPI = {
     getByProject: (projectId) => API.get(`/files/project/${projectId}`),
     upload: (data) => API.post('/files', data),
     delete: (id) => API.delete(`/files/${id}`),
+    download: (id) => `${API.defaults.baseURL}/files/${id}/download`,
 };
 
 // Discussions API
@@ -62,6 +63,14 @@ export const announcementsAPI = {
     getAll: () => API.get('/announcements'),
     create: (data) => API.post('/announcements', data),
     delete: (id) => API.delete(`/announcements/${id}`),
+};
+
+// Invitations API
+export const invitationsAPI = {
+    getByUserEmail: (email) => API.get(`/invitations/user/${email}`),
+    accept: (id) => API.post(`/invitations/${id}/accept`),
+    reject: (id) => API.post(`/invitations/${id}/reject`),
+    create: (data) => API.post('/invitations/create', data),
 };
 
 export default API;

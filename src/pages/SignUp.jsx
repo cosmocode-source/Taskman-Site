@@ -145,7 +145,7 @@ function SignUp() {
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
               <label htmlFor="name">Full Name</label>
-              <div >
+              <div className="input-with-icon">
                 <i className="fas fa-user"></i>
                 <input
                   type="text"
@@ -161,7 +161,7 @@ function SignUp() {
 
             <div className="form-group">
               <label htmlFor="username">Username</label>
-              <div >
+              <div className="input-with-icon">
                 <i className="fas fa-at"></i>
                 <input
                   type="text"
@@ -178,7 +178,7 @@ function SignUp() {
 
             <div className="form-group">
               <label htmlFor="email">Email Address</label>
-              <div >
+              <div className="input-with-icon">
                 <i className="fas fa-envelope"></i>
                 <input
                   type="email"
@@ -194,7 +194,7 @@ function SignUp() {
 
             <div className="form-group">
               <label htmlFor="password">Password</label>
-              <div >
+              <div className="input-with-icon">
                 <i className="fas fa-lock"></i>
                 <input
                   type="password"
@@ -227,7 +227,7 @@ function SignUp() {
 
             <div className="form-group">
               <label htmlFor="confirmPassword">Confirm Password</label>
-              <div >
+              <div className="input-with-icon">
                 <i className="fas fa-lock"></i>
                 <input
                   type="password"

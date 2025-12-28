@@ -76,7 +76,7 @@ function SignIn() {
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
               <label htmlFor="email">Email Address</label>
-              <div className="">
+              <div className="input-with-icon">
                 <i className="fas fa-envelope"></i>
                 <input
                   type="email"
@@ -92,7 +92,7 @@ function SignIn() {
 
             <div className="form-group">
               <label htmlFor="password">Password</label>
-              <div className="">
+              <div className="input-with-icon">
                 <i className="fas fa-lock"></i>
                 <input
                   type="password"

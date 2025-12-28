@@ -144,6 +144,35 @@ function Tasks() {
       return
     }
 
+    const currentUser = JSON.parse(localStorage.getItem('user'))
+    const identifier = newMemberIdentifier.trim().toLowerCase()
+    
+    // Check if trying to add self
+    if (identifier === currentUser?.email?.toLowerCase() || 
+        identifier === currentUser?.username?.toLowerCase()) {
+      alert('You are already part of this project!')
+      return
+    }
+
+    // Check if trying to add the owner
+    if (project?.owner && 
+        (identifier === project.owner.email?.toLowerCase() || 
+         identifier === project.owner.username?.toLowerCase())) {
+      alert('This user is the project owner and already has full access!')
+      return
+    }
+
+    // Check if user is already a member
+    const isAlreadyMember = project?.members?.some(member => 
+      identifier === member.email?.toLowerCase() || 
+      identifier === member.username?.toLowerCase()
+    )
+
+    if (isAlreadyMember) {
+      alert('This user is already a member of the project!')
+      return
+    }
+
     try {
       const response = await projectsAPI.addMember(projectId, newMemberIdentifier)
       setProject(response.data)
@@ -410,6 +439,7 @@ function Tasks() {
                         onClick={() => handleEditTask(task)}
                         title="Edit"
                       >
+                        <i className="fas fa-edit"></i>
                         Edit
                       </button>
                       <button 
@@ -417,6 +447,7 @@ function Tasks() {
                         onClick={() => handleDeleteTask(task._id)}
                         title="Delete"
                       >
+                        <i className="fas fa-trash"></i>
                         Delete
                       </button>
                     </div>

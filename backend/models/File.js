@@ -16,6 +16,12 @@ const fileSchema = new mongoose.Schema({
     url: {
         type: String
     },
+    content: {
+        type: String  // Base64 encoded file content for small files
+    },
+    mimeType: {
+        type: String
+    },
     uploadedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

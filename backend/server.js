@@ -14,6 +14,7 @@ import taskRoutes from './routes/tasks.js'
 import fileRoutes from './routes/files.js'
 import discussionRoutes from './routes/discussions.js'
 import announcementRoutes from './routes/announcements.js'
+import invitationRoutes from './routes/invitations.js'
 
 dotenv.config()
 
@@ -35,6 +36,7 @@ app.use('/api/tasks', taskRoutes)
 app.use('/api/files', fileRoutes)
 app.use('/api/discussions', discussionRoutes)
 app.use('/api/announcements', announcementRoutes)
+app.use('/api/invitations', invitationRoutes)
 
 //Ths is for the tunnling for the ngrok
 
@@ -47,5 +49,5 @@ app.get("*", (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`)
+  console.log(`Server running on http://localhost:${PORT}`)
 })

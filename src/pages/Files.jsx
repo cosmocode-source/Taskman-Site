@@ -83,19 +83,27 @@ function Files() {
     }
   }
 
-  const handleDownload = (file, e) => {
+  const handleDownload = async (file, e) => {
     e.stopPropagation()
     
-    // Create a download link
-    const link = document.createElement('a')
-    link.href = file.url || '#'
-    link.download = file.name
-    link.target = '_blank'
-    
-    // Trigger download
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    try {
+      // Use the download endpoint
+      const downloadUrl = `/api/files/${file._id}/download`
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = file.name
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
+      
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (err) {
+      console.error('Error downloading file:', err)
+      alert('Failed to download file')
+    }
   }
 
   const handleFileSelect = (e) => {
@@ -111,28 +119,53 @@ function Files() {
       return
     }
 
+    // Check file size (limit to 5MB for database storage)
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB')
+      return
+    }
+
     setUploading(true)
     try {
       const user = JSON.parse(localStorage.getItem('user'))
       
-      // For now, create a simple file record (in production, you'd upload to cloud storage)
-      const fileData = {
-        projectId,
-        name: selectedFile.name,
-        size: selectedFile.size,
-        url: '', // In production, this would be the cloud storage URL
-        uploadedBy: user._id
-      }
+      // Read file as base64
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        const base64Content = e.target.result.split(',')[1] // Remove data:mime;base64, prefix
+        
+        const fileData = {
+          projectId,
+          name: selectedFile.name,
+          size: selectedFile.size,
+          content: base64Content,
+          mimeType: selectedFile.type,
+          uploadedBy: user._id
+        }
 
-      const response = await filesAPI.upload(fileData)
-      setFiles([response.data, ...files])
-      setShowUploadModal(false)
-      setSelectedFile(null)
-      alert('File uploaded successfully!')
+        try {
+          const response = await filesAPI.upload(fileData)
+          setFiles([response.data, ...files])
+          setShowUploadModal(false)
+          setSelectedFile(null)
+          alert('File uploaded successfully!')
+        } catch (err) {
+          console.error('Error uploading file:', err)
+          alert(err.response?.data?.message || 'Failed to upload file')
+        } finally {
+          setUploading(false)
+        }
+      }
+      
+      reader.onerror = () => {
+        alert('Failed to read file')
+        setUploading(false)
+      }
+      
+      reader.readAsDataURL(selectedFile)
     } catch (err) {
-      console.error('Error uploading file:', err)
-      alert(err.response?.data?.message || 'Failed to upload file')
-    } finally {
+      console.error('Error processing file:', err)
+      alert('Failed to process file')
       setUploading(false)
     }
   }

@@ -174,6 +174,11 @@ router.post('/:id/members', async (req, res) => {
             return res.status(404).json({ message: 'User not found' })
         }
 
+        // Check if user is the owner
+        if (project.owner.toString() === user._id.toString()) {
+            return res.status(400).json({ message: 'User is the project owner and already has full access' })
+        }
+
         // Check if user is already a member
         if (project.members.includes(user._id)) {
             return res.status(400).json({ message: 'User is already a member of this project' })
@@ -224,24 +229,24 @@ router.delete('/:id/members/:userId', async (req, res) => {
 // @route   PATCH /api/projects/:id/complete
 // @desc    Mark project as completed
 router.patch('/:id/complete', async (req, res) => {
-  try {
-    const { id } = req.params
+    try {
+        const { id } = req.params
 
-    const project = await Project.findByIdAndUpdate(
-      id,
-      { status: 'completed', completedAt: new Date() },
-      { new: true }
-    )
+        const project = await Project.findByIdAndUpdate(
+            id,
+            { status: 'completed', completedAt: new Date() },
+            { new: true }
+        )
 
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found' })
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' })
+        }
+
+        res.json(project)
+    } catch (err) {
+        console.error('Error marking project completed:', err)
+        res.status(500).json({ message: 'Server error marking project completed' })
     }
-
-    res.json(project)
-  } catch (err) {
-    console.error('Error marking project completed:', err)
-    res.status(500).json({ message: 'Server error marking project completed' })
-  }
 })
 
 export default router

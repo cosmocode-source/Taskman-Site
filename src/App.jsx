@@ -9,6 +9,7 @@ import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
 import Announcements from './pages/Announcements'
+import Invitations from './pages/Invitations'
 import Projects from './pages/Projects'
 import NewProject from './pages/NewProject'
 import Tasks from './pages/Tasks'
@@ -62,6 +63,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Announcements />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/invitations" 
+          element={
+            <ProtectedRoute>
+              <Invitations />
             </ProtectedRoute>
           } 
         />

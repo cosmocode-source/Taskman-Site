@@ -17,7 +17,9 @@ function Discussion() {
   const [chatMessages, setChatMessages] = useState([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [unreadCounts, setUnreadCounts] = useState({})
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const chatEndRef = useRef(null)
+  const fileInputRef = useRef(null)
   const currentUser = JSON.parse(localStorage.getItem('user'))
 
   // Inline Styles
@@ -27,6 +29,7 @@ function Discussion() {
       gridTemplateColumns: '320px 1fr',
       gap: 0,
       height: 'calc(100vh - 60px)',
+      maxHeight: 'calc(100vh - 60px)',
       background: '#0f1117',
       overflow: 'hidden'
     },
@@ -36,6 +39,7 @@ function Discussion() {
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
+      maxHeight: '100%',
       overflow: 'hidden',
       position: sidebarOpen ? 'fixed' : 'relative',
       left: sidebarOpen ? 0 : 'auto',
@@ -182,11 +186,13 @@ function Discussion() {
     chatMessages: {
       flex: 1,
       overflowY: 'auto',
+      overflowX: 'hidden',
       padding: '24px 28px',
       display: 'flex',
       flexDirection: 'column',
       gap: '20px',
-      background: '#242731'
+      background: '#242731',
+      minHeight: 0
     },
     chatMessage: (isOwn) => ({
       display: 'flex',
@@ -405,7 +411,8 @@ function Discussion() {
       padding: '20px 28px',
       borderTop: '1px solid #2f3342',
       background: '#1a1d29',
-      flexShrink: 0
+      flexShrink: 0,
+      minHeight: 'fit-content'
     },
     inputWrapper: {
       display: 'flex',
@@ -534,6 +541,24 @@ function Discussion() {
     scrollToBottom()
   }, [chatMessages])
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showEmojiPicker) {
+        setShowEmojiPicker(false)
+      }
+    }
+    
+    if (showEmojiPicker) {
+      setTimeout(() => {
+        document.addEventListener('click', handleClickOutside)
+      }, 0)
+    }
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showEmojiPicker])
+
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -606,6 +631,33 @@ function Discussion() {
     setSidebarOpen(false)
   }
 
+  const handleFileClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      alert(`File upload feature: "${file.name}" selected. Backend integration needed for file storage.`)
+      // TODO: Implement file upload to backend
+    }
+  }
+
+  const handleEmojiClick = (e) => {
+    e.stopPropagation()
+    e.preventDefault()
+    console.log('Emoji button clicked, current state:', showEmojiPicker)
+    setShowEmojiPicker(prev => !prev)
+  }
+
+  const insertEmoji = (emoji) => {
+    console.log('Inserting emoji:', emoji)
+    setNewMessage(prev => prev + emoji)
+    setShowEmojiPicker(false)
+  }
+
+  const commonEmojis = ['😀', '😊', '😂', '❤️', '👍', '👏', '🎉', '🔥', '✅', '💯', '🚀', '💪', '🙌', '👌', '✨', '⭐']
+
   const formatTime = (date) => {
     const now = new Date()
     const messageDate = new Date(date)
@@ -648,7 +700,7 @@ function Discussion() {
     )
   }
 
-  const otherMembers = project?.members?.filter(m => m.user._id !== currentUser._id) || []
+  const otherMembers = project?.members?.filter(m => m?._id !== currentUser._id) || []
 
   return (
     <>
@@ -687,16 +739,16 @@ function Discussion() {
             {/* Team Members */}
             {otherMembers.map((member) => (
               <div
-                key={member.user._id}
-                style={styles.memberItem(selectedMember?._id === member.user._id, false)}
-                onClick={() => handleSelectMember(member.user)}
+                key={member?._id}
+                style={styles.memberItem(selectedMember?._id === member?._id, false)}
+                onClick={() => handleSelectMember(member)}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = '#2f3342'
                   e.currentTarget.style.borderColor = '#3498db'
                   e.currentTarget.style.transform = 'translateX(4px)'
                 }}
                 onMouseLeave={(e) => {
-                  const isActive = selectedMember?._id === member.user._id
+                  const isActive = selectedMember?._id === member?._id
                   e.currentTarget.style.background = isActive ? 'rgba(52, 152, 219, 0.15)' : '#242731'
                   e.currentTarget.style.borderColor = isActive ? '#3498db' : 'transparent'
                   e.currentTarget.style.transform = 'translateX(0)'
@@ -706,12 +758,12 @@ function Discussion() {
                   <i className="fas fa-user-circle"></i>
                 </div>
                 <div style={styles.memberDetails}>
-                  <div style={styles.memberName}>{member.user.name}</div>
-                  <div style={styles.memberUsername}>@{member.user.username}</div>
+                  <div style={styles.memberName}>{member?.name}</div>
+                  <div style={styles.memberUsername}>@{member?.username}</div>
                 </div>
                 <div style={styles.memberStatus}></div>
-                {unreadCounts[member.user._id] && (
-                  <div style={styles.unreadBadge}>{unreadCounts[member.user._id]}</div>
+                {unreadCounts[member?._id] && (
+                  <div style={styles.unreadBadge}>{unreadCounts[member?._id]}</div>
                 )}
               </div>
             ))}
@@ -916,9 +968,18 @@ function Discussion() {
             <form onSubmit={handleSubmitMessage} style={styles.inputWrapper}>
               <div style={styles.inputGroup}>
                 <div style={styles.inputContainer}>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleFileUpload}
+                    accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif"
+                  />
                   <button 
                     type="button" 
                     style={styles.iconBtn}
+                    onClick={handleFileClick}
+                    title="Attach file"
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = '#3498db'
                       e.currentTarget.style.background = 'rgba(52, 152, 219, 0.1)'
@@ -947,7 +1008,9 @@ function Discussion() {
                   />
                   <button 
                     type="button" 
-                    style={styles.iconBtn}
+                    style={{...styles.iconBtn, position: 'relative'}}
+                    onClick={handleEmojiClick}
+                    title="Insert emoji"
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = '#f39c12'
                       e.currentTarget.style.background = 'rgba(243, 156, 18, 0.1)'
@@ -960,6 +1023,53 @@ function Discussion() {
                     <i className="fas fa-smile"></i>
                   </button>
                 </div>
+                {showEmojiPicker && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '90px',
+                      right: '28px',
+                      background: '#242731',
+                      border: '1px solid #2f3342',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+                      zIndex: 10000,
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(8, 1fr)',
+                      gap: '8px',
+                      minWidth: '280px'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {commonEmojis.map((emoji, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => insertEmoji(emoji)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          fontSize: '24px',
+                          cursor: 'pointer',
+                          padding: '8px',
+                          borderRadius: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#2f3342'
+                          e.currentTarget.style.transform = 'scale(1.2)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent'
+                          e.currentTarget.style.transform = 'scale(1)'
+                        }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <button 
                 type="submit" 

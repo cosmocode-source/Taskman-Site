@@ -18,21 +18,38 @@ router.get('/project/:projectId', async (req, res) => {
     }
 })
 
-// @route   GET /api/files/:id
-// @desc    Get single file
-router.get('/:id', async (req, res) => {
+// @route   GET /api/files/:id/download
+// @desc    Download file with proper headers
+// NOTE: This must come BEFORE the /:id route to avoid being caught by it
+router.get('/:id/download', async (req, res) => {
     try {
         const file = await File.findById(req.params.id)
-            .populate('uploadedBy', 'name username email avatar')
 
         if (!file) {
             return res.status(404).json({ message: 'File not found' })
         }
 
-        res.json(file)
+        // If file has base64 content, serve it
+        if (file.content) {
+            const buffer = Buffer.from(file.content, 'base64')
+            res.set({
+                'Content-Type': file.mimeType || 'application/octet-stream',
+                'Content-Disposition': `attachment; filename="${file.name}"`,
+                'Content-Length': buffer.length
+            })
+            return res.send(buffer)
+        }
+
+        // If file has a URL, redirect to it
+        if (file.url) {
+            return res.redirect(file.url)
+        }
+
+        // Otherwise send error
+        res.status(404).json({ message: 'File content not available' })
     } catch (error) {
-        console.error('Error fetching file:', error)
-        res.status(500).json({ message: 'Server error fetching file' })
+        console.error('Error downloading file:', error)
+        res.status(500).json({ message: 'Server error downloading file' })
     }
 })
 
@@ -40,7 +57,7 @@ router.get('/:id', async (req, res) => {
 // @desc    Upload a new file (any project member can upload)
 router.post('/', async (req, res) => {
     try {
-        const { projectId, name, size, url, uploadedBy } = req.body
+        const { projectId, name, size, url, content, mimeType, uploadedBy } = req.body
 
         if (!projectId || !name || !uploadedBy) {
             return res.status(400).json({ message: 'Please provide all required fields' })
@@ -51,6 +68,8 @@ router.post('/', async (req, res) => {
             name,
             size: size || 'Unknown',
             url: url || '',
+            content: content || '',
+            mimeType: mimeType || 'application/octet-stream',
             uploadedBy
         })
 

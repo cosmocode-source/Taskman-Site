@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { announcementsAPI } from '../services/api'
 import './Nav.css'
@@ -11,6 +11,9 @@ function Nav() {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [announcements, setAnnouncements] = useState([])
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
+  const notificationRef = useRef(null)
+  const dropdownRef = useRef(null)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -20,12 +23,51 @@ function Nav() {
     }
   }, [])
 
+  // Click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false)
+      }
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false)
+      }
+    }
+
+    if (showNotifications || showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [showNotifications, showDropdown])
+
   const fetchAnnouncements = async () => {
     try {
       const response = await announcementsAPI.getAll()
       setAnnouncements(response.data.slice(0, 5)) // Show latest 5
+      
+      // Check if user has viewed notifications
+      const lastViewedTime = localStorage.getItem('lastViewedNotifications')
+      if (response.data.length > 0 && lastViewedTime) {
+        const hasNewNotifications = response.data.some(announcement => 
+          new Date(announcement.createdAt) > new Date(lastViewedTime)
+        )
+        setHasUnreadNotifications(hasNewNotifications)
+      } else if (response.data.length > 0) {
+        setHasUnreadNotifications(true)
+      }
     } catch (error) {
       console.error('Error fetching announcements:', error)
+    }
+  }
+
+  const handleNotificationClick = () => {
+    setShowNotifications(!showNotifications)
+    if (!showNotifications) {
+      // Mark notifications as read
+      localStorage.setItem('lastViewedNotifications', new Date().toISOString())
+      setHasUnreadNotifications(false)
     }
   }
 
@@ -58,14 +100,14 @@ function Nav() {
         <div className="nav-icons">
           {user ? (
             <>
-              <div className="notification-wrapper">
+              <div className="notification-wrapper" ref={notificationRef}>
                 <button 
                   className="icon-btn" 
-                  onClick={() => setShowNotifications(!showNotifications)}
+                  onClick={handleNotificationClick}
                   title="Notifications"
                 >
                   <i className="far fa-bell"></i>
-                  {announcements.length > 0 && (
+                  {hasUnreadNotifications && announcements.length > 0 && (
                     <span className="notification-badge">{announcements.length}</span>
                   )}
                 </button>
@@ -115,7 +157,7 @@ function Nav() {
                   </div>
                 )}
               </div>
-              <div className="user-menu">
+              <div className="user-menu" ref={dropdownRef}>
                 <button 
                   className="icon-btn profile" 
                   onClick={() => setShowDropdown(!showDropdown)}
@@ -138,6 +180,10 @@ function Nav() {
                     <Link to="/projects" className="dropdown-item">
                       <i className="fas fa-folder"></i>
                       My Projects
+                    </Link>
+                    <Link to="/invitations" className="dropdown-item">
+                      <i className="fas fa-envelope-open"></i>
+                      Invitations
                     </Link>
                     <Link to="/announcements" className="dropdown-item">
                       <i className="fas fa-bullhorn"></i>
